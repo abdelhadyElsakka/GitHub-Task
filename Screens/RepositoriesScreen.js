@@ -40,24 +40,27 @@ const RepositoriesScreen = () => {
   const [datePicker, setDatePicker] = useState(false);
   const [date, setDate] = useState(new Date('2000-01-01'));
 
-
   const [theme, setTheme] = useState(Appearance.getColorScheme())
+
 
   Appearance.addChangeListener((scheme)=>{
     setTheme(scheme.colorScheme)
   })
 
-  const fetchData = async () => {
-    const resp = await fetch(
-      `https://api.github.com/search/repositories?q=stars:>=500+language:${language}+created:>=${date.getFullYear()}-${twoDigitsNumber(
-        date.getMonth() + 1,
-      )}-${twoDigitsNumber(
-        date.getDate(),
-      )}&sort=stars&order=desc&per_page=10&page=${page}`,
-    ).catch((err)=>alert(err));
-    const result = await resp.json().catch((err)=>alert(err));
-    page === 1 ? setData(result.items) : setData([...data, ...result.items]);
-    setLoading(false);
+  const fetchData = () => {
+    setTimeout(async ()=>{
+      const resp = await fetch(
+        `https://api.github.com/search/repositories?q=stars:>=500+language:${encodeURIComponent(language)}+created:>=${date.getFullYear()}-${twoDigitsNumber(
+          date.getMonth() + 1,
+        )}-${twoDigitsNumber(
+          date.getDate(),
+        )}&sort=stars&order=desc&per_page=30&page=${page}`,
+      ).catch((err)=>alert(err));
+      const result = await resp.json().catch((err)=>alert(err));
+      page === 1 ? setData(result.items) : setData([...data, ...result.items]);
+      setLoading(false);
+    },1000)
+   
   };
 
   const getLanguagers = (data)=>{
@@ -76,9 +79,7 @@ const RepositoriesScreen = () => {
     }
   }
 
-  
 
-  
 
   const renderLoader = () => {
     return (
@@ -142,11 +143,11 @@ const RepositoriesScreen = () => {
                     style={
                       styles.RepositoriesScreen_FlatList_Selector_FixedText
                     }>
-                    Language :{' '}
+                    Language :
                   </Text>
                   <Text
                     style={theme== 'light' ? styles.RepositoriesScreen_FlatList_Selector_Text : darkMode.RepositoriesScreen_FlatList_Selector_Text}>
-                    {language}
+                    {language.substring(0, 9)}
                   </Text>
                   <MaterialIcons
                     name="keyboard-arrow-down"
