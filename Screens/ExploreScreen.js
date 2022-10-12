@@ -31,22 +31,29 @@ const ExploreScreen = () => {
 
   const [theme, setTheme] = useState(Appearance.getColorScheme())
 
+  var isFetching=false
+
+
   Appearance.addChangeListener((scheme)=>{
     setTheme(scheme.colorScheme)
   })
 
   const fetchData = async () => {
+    isFetching=true
     const resp = await fetch(
       `https://api.github.com/search/repositories?q=stars:>=500&sort=stars&per_page=${numOfRepos}`,
     ).catch(err => alert(err));
     const result = await resp.json().catch(err => alert(err));
     setData(result.items);
     setLoading(false);
+    isFetching=false
   };
 
   const handleClick = numOfRepos => {
-    setNumOfRepos(numOfRepos);
-    setShowSelectList(false);
+    if(!isFetching){
+      setNumOfRepos(numOfRepos);
+      setShowSelectList(false);
+    }
   };
 
 

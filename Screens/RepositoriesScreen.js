@@ -10,6 +10,10 @@ import {
   Appearance
 } from 'react-native';
 
+// Data
+
+import programmingLanguages from '../Data/ProgrammingLanguages';
+
 // Libraries
 
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -42,43 +46,27 @@ const RepositoriesScreen = () => {
 
   const [theme, setTheme] = useState(Appearance.getColorScheme())
 
+  var isFetching=false
 
   Appearance.addChangeListener((scheme)=>{
     setTheme(scheme.colorScheme)
   })
 
-  const fetchData = () => {
-    setTimeout(async ()=>{
+
+  const fetchData = async () => {
+      isFetching=true
       const resp = await fetch(
         `https://api.github.com/search/repositories?q=stars:>=500+language:${encodeURIComponent(language)}+created:>=${date.getFullYear()}-${twoDigitsNumber(
           date.getMonth() + 1,
         )}-${twoDigitsNumber(
           date.getDate(),
-        )}&sort=stars&order=desc&per_page=30&page=${page}`,
-      ).catch((err)=>alert(err));
+        )}&sort=stars&order=desc&per_page=20&page=${page}`,
+      ).then().catch((err)=>alert(err));
       const result = await resp.json().catch((err)=>alert(err));
       page === 1 ? setData(result.items) : setData([...data, ...result.items]);
       setLoading(false);
-    },1000)
-   
+      isFetching=false   
   };
-
-  const getLanguagers = (data)=>{
-    if (data!=null) {
-      const languages = data.map((item, i) => {
-        return item.language;
-      });
-  
-      const uniqueLanguages = languages.filter((item, i) => {
-        return languages.indexOf(item) === i && item !== null;
-      });
-
-      return(
-        uniqueLanguages
-      )
-    }
-  }
-
 
 
   const renderLoader = () => {
@@ -90,19 +78,24 @@ const RepositoriesScreen = () => {
   };
 
   const loadMoreItems = () => {
-    setPage(page + 1)
+    !isFetching && setPage(page + 1)
+  
   };
 
   const handleClick = language => {
+    if (!isFetching) {
     setPage(1);
     setLanguage(language);
     setShowSelectList(false);
+    }
   };
 
   const onDateSelected= (event, value)=> {
+    if (!isFetching) {
     setDate(value);
     setPage(1);
     setDatePicker(false);
+    }
   }
 
   useEffect(() => {
@@ -115,7 +108,7 @@ const RepositoriesScreen = () => {
         <SelectList
           handleClick={handleClick}
           type={'Language'}
-          items={getLanguagers(data)}
+          items={programmingLanguages}
           showSelectList={showSelectList}
         />
       )}
@@ -189,7 +182,7 @@ const RepositoriesScreen = () => {
           renderItem={({item}) => <Item item={item} screen={'Repos'} />}
           keyExtractor={item => item.id}
           ListFooterComponent={renderLoader}
-          onEndReached={loadMoreItems}
+          onEndReached={(!isFetching && (loadMoreItems))}
           onEndReachedThreshold={0}
         />
       )}
