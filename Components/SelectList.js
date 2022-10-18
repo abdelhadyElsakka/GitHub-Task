@@ -18,7 +18,6 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import darkMode from '../styles/DarkMode';
 
 const SelectList = props => {
-  const [showSelectList, setShowSelectList] = useState(true);
 
   const [items, setItems] = useState(props.items);
 
@@ -40,7 +39,6 @@ const SelectList = props => {
 
   return (
     <>
-      {showSelectList && (
         <View style={styles.SelectList_Background}>
           <View style={theme== 'light' ? styles.SelectList_MainView : darkMode.SelectList_MainView}>
             <View
@@ -52,7 +50,7 @@ const SelectList = props => {
                 </Text>
                 <Pressable
                   onPress={() => {
-                    props.handleClick('Any');
+                    props.closeSelector()
                   }}>
                   <AntDesign name="closecircle" size={20} color={theme== 'light' ? "#ccd5dd" : "#fff" } />
                 </Pressable>
@@ -88,7 +86,6 @@ const SelectList = props => {
             </View>
           </View>
         </View>
-      )}
     </>
   );
 };
@@ -102,13 +99,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   SelectList_MainView: {
-    height: '50%',
+    height: '70%',
     width: '90%',
     backgroundColor: '#fff',
     position: 'absolute',
     borderRadius: 20,
     left: '5%',
-    top: '8%',
+    top: '20%',
   },
   SelectList_Container:{
     width: '90%',

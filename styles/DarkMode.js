@@ -4,7 +4,6 @@ import { StyleSheet } from "react-native";
 const darkMode= StyleSheet.create({
     ExploreScreen_FlatList_Container: {
         backgroundColor: '#0d1015',
-        paddingBottom: 200,
       },
       ExploreScreen_FlatList_Title_Text: {
         fontSize: 20,
@@ -33,7 +32,6 @@ const darkMode= StyleSheet.create({
       
       RepositoriesScreen_FlatList_Container: {
         backgroundColor: '#0d1015',
-        paddingBottom: 200,
       },
       RepositoriesScreen_FlatList_Title_Text: {
         fontSize: 20,
@@ -57,7 +55,12 @@ const darkMode= StyleSheet.create({
         fontWeight: '700',
         color: '#fff',
       },
-    
+      
+      RepositoriesScreen_FlatList_Pagination_CurrentPageNumber:{
+        fontSize:25, 
+        paddingHorizontal:15, 
+        color:'#fff'
+      },
       
       ExploreCard: {
         width: '90%',
@@ -148,13 +151,13 @@ const darkMode= StyleSheet.create({
       },
     
       SelectList_MainView: {
-        height: '50%',
+        height: '70%',
         width: '90%',
         backgroundColor: '#161b21',
         position: 'absolute',
         borderRadius: 20,
         left: '5%',
-        top: '8%',
+        top: '20%',
         borderWidth:.5,
         borderColor:'#808080',
       },

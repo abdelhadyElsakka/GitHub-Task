@@ -7,72 +7,75 @@ import {
   Pressable,
   View,
   ActivityIndicator,
-  Appearance
+  Appearance,
 } from 'react-native';
-
+// redux
+import {useSelector, useDispatch} from 'react-redux';
+import {fetchRepos} from '../redux/Features/ReposApi/ReposApiSlice';
+import {firstPage} from '../redux/Features/ReposApi/ReposApiSlice';
 // Icons
-
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-
 // Components
-
 import SelectList from '../Components/SelectList';
 import Item from '../Components/Item';
-
+import Header from '../Components/Header';
 // Styles
-
 import darkMode from '../styles/DarkMode';
 
-const ExploreScreen = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+const ExploreScreen = ({navigation}) => {
   const [numOfRepos, setNumOfRepos] = useState(10);
   const [showSelectList, setShowSelectList] = useState(false);
+  const [theme, setTheme] = useState(Appearance.getColorScheme());
+  const dispatch = useDispatch();
+  const repos = useSelector(state => state.repos);
+  const page = repos.page;
 
-  const [theme, setTheme] = useState(Appearance.getColorScheme())
+  useEffect(() => {
+    navigation.addListener("focus",()=>{
+      dispatch(firstPage());
+      dispatch(fetchRepos({numOfRepos}));
+    })
+  }, [navigation, page]);
 
-  var isFetching=false
+  useEffect(() => {
+    dispatch(fetchRepos({numOfRepos}));
+  }, [dispatch, numOfRepos, page]);
 
-
-  Appearance.addChangeListener((scheme)=>{
-    setTheme(scheme.colorScheme)
-  })
-
-  const fetchData = async () => {
-    isFetching=true
-    const resp = await fetch(
-      `https://api.github.com/search/repositories?q=stars:>=500&sort=stars&per_page=${numOfRepos}`,
-    ).catch(err => alert(err));
-    const result = await resp.json().catch(err => alert(err));
-    setData(result.items);
-    setLoading(false);
-    isFetching=false
-  };
+  Appearance.addChangeListener(scheme => {
+    setTheme(scheme.colorScheme);
+  });
 
   const handleClick = numOfRepos => {
-    if(!isFetching){
+    if (repos.status !== 'loading') {
+      dispatch(firstPage());
       setNumOfRepos(numOfRepos);
       setShowSelectList(false);
     }
   };
 
-
-  useEffect(() => {
-    fetchData();
-  }, [numOfRepos]);
+  const closeSelector = () => {
+    setShowSelectList(false);
+  };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView
+      style={
+        theme == 'light'
+          ? styles.MainScreen_Background
+          : darkMode.MainScreen_Background
+      }>
+      <Header currentScreen={'Explore'} navigateTo={'Repositories'} />
       {showSelectList && (
         <SelectList
           handleClick={handleClick}
+          closeSelector={closeSelector}
           type={'Number'}
           items={[10, 50, 100]}
           showSelectList={showSelectList}
         />
       )}
 
-      {loading ? (
+      {repos.status !== 'success' ? (
         <View style={styles.ExploreScreen_ActivityIndicator}>
           <ActivityIndicator size="large" color={'#85d8c1'} />
         </View>
@@ -80,14 +83,30 @@ const ExploreScreen = () => {
         <FlatList
           ListHeaderComponent={
             <View style={styles.ExploreScreen_FlatList_Title}>
-              <Text style={theme== 'light' ? styles.ExploreScreen_FlatList_Title_Text : darkMode.ExploreScreen_FlatList_Title_Text}>
+              <Text
+                style={
+                  theme == 'light'
+                    ? styles.ExploreScreen_FlatList_Title_Text
+                    : darkMode.ExploreScreen_FlatList_Title_Text
+                }>
                 Explore popular
               </Text>
               <Pressable
-                onPress={() => (setShowSelectList(true))}
-                style={theme== 'light' ? styles.ExploreScreen_FlatList_Selector : darkMode.ExploreScreen_FlatList_Selector}>
-                <Text style={styles.ExploreScreen_FlatList_Selector_FixedText}>View : </Text>
-                <Text style={theme== 'light' ? styles.ExploreScreen_FlatList_Selector_Text : darkMode.ExploreScreen_FlatList_Selector_Text}>
+                onPress={() => setShowSelectList(true)}
+                style={
+                  theme == 'light'
+                    ? styles.ExploreScreen_FlatList_Selector
+                    : darkMode.ExploreScreen_FlatList_Selector
+                }>
+                <Text style={styles.ExploreScreen_FlatList_Selector_FixedText}>
+                  View :{' '}
+                </Text>
+                <Text
+                  style={
+                    theme == 'light'
+                      ? styles.ExploreScreen_FlatList_Selector_Text
+                      : darkMode.ExploreScreen_FlatList_Selector_Text
+                  }>
                   Top {numOfRepos}
                 </Text>
                 <MaterialIcons
@@ -98,9 +117,13 @@ const ExploreScreen = () => {
               </Pressable>
             </View>
           }
-          contentContainerStyle={theme== 'light' ? styles.ExploreScreen_FlatList_Container : darkMode.ExploreScreen_FlatList_Container}
+          contentContainerStyle={
+            theme == 'light'
+              ? styles.ExploreScreen_FlatList_Container
+              : darkMode.ExploreScreen_FlatList_Container
+          }
           numColumns={1}
-          data={data}
+          data={repos.data.items}
           renderItem={({item}) => <Item item={item} screen={'Explore'} />}
           keyExtractor={item => item.id}
         />
@@ -110,13 +133,17 @@ const ExploreScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  MainScreen_Background: {
+    backgroundColor: '#fbfcfe',
+    height: '100%',
+    width: '100%',
+  },
   ExploreScreen_ActivityIndicator: {
     marginVertical: 300,
     alignItems: 'center',
   },
   ExploreScreen_FlatList_Container: {
     backgroundColor: '#fbfcfe',
-    paddingBottom: 200,
   },
   ExploreScreen_FlatList_Title: {
     width: '90%',
@@ -141,12 +168,12 @@ const styles = StyleSheet.create({
     width: '40%',
   },
   ExploreScreen_FlatList_Selector_Text: {
-    fontWeight: '700', 
-    color: '#000'
+    fontWeight: '700',
+    color: '#000',
   },
 
   ExploreScreen_FlatList_Selector_FixedText: {
-    color: '#808080'
+    color: '#808080',
   },
 });
 
